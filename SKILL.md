@@ -114,7 +114,7 @@ Options:
 
 **After SC key is saved (not if skipped), show the TikTok/Instagram opt-in:**
 
-Your ScrapeCreators key also powers TikTok and Instagram search. Want those on for every research run? (Each uses a few of your free calls per search.)
+Your ScrapeCreators key also powers TikTok and Instagram search. Want those on for every research run? (Each additional source uses a ScrapeCreators call per search.)
 
 **Call AskUserQuestion:**
 Question: "Also search TikTok and Instagram?"
