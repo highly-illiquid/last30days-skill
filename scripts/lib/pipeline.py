@@ -40,6 +40,7 @@ from . import (
     xai_x,
     xiaohongshu_api,
     xquik,
+    podcast_yt,
     youtube_yt,
 )
 from .cluster import cluster_candidates
@@ -77,6 +78,7 @@ MOCK_AVAILABLE_SOURCES = [
     "github",
     "perplexity",
     "xquik",
+    "podcasts",
 ]
 
 
@@ -122,6 +124,8 @@ def available_sources(config: dict[str, Any], requested_sources: list[str] | Non
         available.append("pinterest")
     if env.is_xquik_available(config):
         available.append("xquik")
+    if podcast_yt.is_available() and ("podcasts" in include_sources or (requested_sources and "podcasts" in requested_sources)):
+        available.append("podcasts")
     return available
 
 
@@ -177,6 +181,7 @@ def run(
     lookback_days: int = 30,
     github_user: str | None = None,
     github_repos: list[str] | None = None,
+    podcast_channels: list[str] | None = None,
 ) -> schema.Report:
     settings = DEPTH_SETTINGS[depth]
     requested_sources = normalize_requested_sources(requested_sources)
@@ -318,6 +323,7 @@ def run(
                         tiktok_hashtags=tiktok_hashtags,
                         tiktok_creators=tiktok_creators,
                         ig_creators=ig_creators,
+                        podcast_channels=podcast_channels,
                     )
                 ] = (subquery, source)
 
@@ -348,6 +354,7 @@ def run(
                             tiktok_hashtags=tiktok_hashtags,
                             tiktok_creators=tiktok_creators,
                             ig_creators=ig_creators,
+                            podcast_channels=podcast_channels,
                         )
                     except Exception as retry_exc:
                         bundle.errors_by_source[source] = f"{exc} (retried once, still failed: {retry_exc})"
@@ -787,6 +794,7 @@ def _retrieve_stream(
     tiktok_hashtags: list[str] | None = None,
     tiktok_creators: list[str] | None = None,
     ig_creators: list[str] | None = None,
+    podcast_channels: list[str] | None = None,
 ) -> tuple[list[dict], dict]:
     # Early exit if source was rate-limited by a sibling future
     if rate_limited_sources is not None and source in rate_limited_sources:
@@ -874,6 +882,13 @@ def _retrieve_stream(
             sc_token = config.get("SCRAPECREATORS_API_KEY", "")
             youtube_yt.enrich_with_comments(items, token=sc_token)
         return items, {}
+    if source == "podcasts":
+        podcast_query = raw_topic or subquery.search_query
+        result = podcast_yt.search_podcast_youtube(
+            podcast_query, from_date, to_date,
+            depth=depth, channels=podcast_channels,
+        )
+        return result.get("items", []), {}
     if source == "tiktok":
         # Use raw_topic so expand_tiktok_queries() generates diverse variants
         # from the original user topic, not the planner's narrowed search_query.

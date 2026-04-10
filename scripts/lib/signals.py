@@ -19,6 +19,7 @@ SOURCE_QUALITY = {
     "polymarket": 0.5,
     "instagram": 0.58,
     "tiktok": 0.58,
+    "podcasts": 0.88,
 }
 
 

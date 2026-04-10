@@ -170,6 +170,7 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Use web search to discover subreddits/handles before planning (for platforms without WebSearch)")
     parser.add_argument("--github-user", help="GitHub username for person-mode search (e.g., steipete)")
     parser.add_argument("--github-repo", help="Comma-separated owner/repo for project-mode search (e.g., openclaw/openclaw,paperclipai/paperclip)")
+    parser.add_argument("--podcast-channels", help="Comma-separated YouTube @handles for podcast transcript scanning (e.g., AcquiredFM,lexfridman,DwarkeshPatel)")
     return parser
 
 
@@ -308,6 +309,7 @@ def main() -> int:
 
         github_user = args.github_user.lstrip("@").lower() if args.github_user else None
         github_repos = [r.strip() for r in args.github_repo.split(",") if r.strip() and "/" in r.strip()] if args.github_repo else None
+        podcast_channels = [c.strip().lstrip("@") for c in args.podcast_channels.split(",") if c.strip()] if args.podcast_channels else None
 
         # --deep-research: auto-enable perplexity source and set deep flag
         if args.deep_research:
@@ -337,6 +339,7 @@ def main() -> int:
             lookback_days=args.lookback_days,
             github_user=github_user,
             github_repos=github_repos,
+            podcast_channels=podcast_channels,
         )
     except Exception as exc:
         progress.end_processing()

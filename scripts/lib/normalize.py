@@ -53,6 +53,7 @@ def normalize_source_items(
         "xiaohongshu": _normalize_grounding,
         "github": _normalize_github,
         "perplexity": _normalize_grounding,
+        "podcasts": lambda s, i, idx, fd, td: _normalize_youtube(s, i, idx, fd, td),
     }
     normalizer = normalizers.get(source)
     if normalizer is None:
