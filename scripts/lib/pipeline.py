@@ -124,7 +124,10 @@ def available_sources(config: dict[str, Any], requested_sources: list[str] | Non
         available.append("pinterest")
     if env.is_xquik_available(config):
         available.append("xquik")
-    if podcast_yt.is_available() and ("podcasts" in include_sources or (requested_sources and "podcasts" in requested_sources)):
+    # Podcasts: available whenever yt-dlp is installed (same as YouTube).
+    # Opt-out only. The source returns empty when no channels are resolved,
+    # so there's no cost to having it available.
+    if podcast_yt.is_available():
         available.append("podcasts")
     return available
 

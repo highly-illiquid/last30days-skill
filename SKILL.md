@@ -375,7 +375,7 @@ Common patterns:
 - Always active: Reddit, Hacker News, Polymarket
 - If gh CLI is installed (check `which gh`): add GitHub
 - If AUTH_TOKEN/CT0 or XAI_API_KEY or FROM_BROWSER is set: add X
-- If yt-dlp is installed (check `which yt-dlp`): add YouTube
+- If yt-dlp is installed (check `which yt-dlp`): add YouTube AND Podcasts
 - If SCRAPECREATORS_API_KEY is set and INCLUDE_SOURCES contains tiktok: add TikTok
 - If SCRAPECREATORS_API_KEY is set and INCLUDE_SOURCES contains instagram: add Instagram
 - If SCRAPECREATORS_API_KEY is set and INCLUDE_SOURCES contains threads: add Threads
@@ -615,6 +615,27 @@ Store as `RESOLVED_IG_CREATORS`.
 
 Store as `RESOLVED_YT_QUERIES`.
 
+**6. Podcast channels** — **INFER 6-12 YouTube podcast channel @handles from topic knowledge.** Think in two dimensions:
+
+1. **Domain podcasts** — What YouTube podcasts focus on this topic's domain?
+   - Hip-hop/music → `DrinkChamps,JoeBuddenTV,BreakfastClubPower1051FM,OfficialFlagrant`
+   - Tech/AI/startups → `lexfridman,DwarkeshPatel,AllInPod,MyFirstMillionPod,LennysPodcast`
+   - Business/finance → `AcquiredFM,InvestLikeTheBest,PatrickBoyleOnFinance,PropGPod`
+   - Sports → `PatMcAfeeShowOfficial,ShannonSharpe,ClubShayShay`
+   - Culture/celebs → `joerogan,CallHerDaddy,ClubShayShay`
+   - Knitting/crafts → `FruityKnitting,VeryPinkKnits,GroceryGirlsKnit`
+
+2. **Cross-domain podcasts** — What popular interview/deep-dive podcasts might cover this topic even if it's not their main focus?
+   - Business-adjacent topics → `AcquiredFM,InvestLikeTheBest` (company deep dives)
+   - Tech-adjacent topics → `lexfridman,AllInPod` (broad tech interviews)
+   - Culture-adjacent topics → `joerogan,OfficialFlagrant` (celebrity interviews)
+
+**Rationale:** The engine uses these channels for transcript-first discovery. Even if the topic isn't in an episode title, it may be discussed within the episode. Acquired's "The NFL" episode mentions Taylor Swift 18 times, ESPN 117 times — invisible to YouTube search but found by transcript scanning.
+
+**Handle accuracy:** Return your best guess at the exact @handle. If wrong, the engine falls back to a search-based lookup. Don't stress the exact spelling — `@AcquiredFM`, `@lexfridman`, `@joerogan` work; `@FLAGRANT` fails but falls back to find `@OfficialFlagrant`.
+
+Store as `RESOLVED_PODCAST_CHANNELS` (comma-separated, no @ prefix).
+
 **Concrete examples:**
 
 | Topic | WebSearches needed | Reddit subs | TikTok hashtags | TikTok creators | IG creators | YT queries |
@@ -635,6 +656,7 @@ Resolved:
 - Reddit: r/{sub1}, r/{sub2}, r/{sub3}
 - TikTok: #{hashtag1}, #{hashtag2}
 - YouTube: {query1}, {query2}
+- Podcasts: @{channel1}, @{channel2}, @{channel3}
 ```
 
 Only show lines for platforms where something was resolved. Skip empty lines. This display replaces the old "Parsed intent" block with something more useful.
@@ -760,6 +782,7 @@ fi
 - `--ig-creators={RESOLVED_IG_CREATORS}` (from Step 0.55)
 - `--github-user={RESOLVED_GITHUB_USER}` (from Step 0.5b, person topics only)
 - `--github-repo={RESOLVED_GITHUB_REPOS}` (from Step 0.5c, product/project topics only)
+- `--podcast-channels={RESOLVED_PODCAST_CHANNELS}` (from Step 0.55, 6-12 @handles)
 - Omit any flag where the value was not resolved (empty).
 
 **If you skipped Steps 0.55 and 0.75 (no WebSearch -- OpenClaw, Codex, etc.), add:**

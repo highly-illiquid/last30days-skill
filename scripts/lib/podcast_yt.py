@@ -214,12 +214,52 @@ def _fetch_captions(video_id: str, temp_dir: str) -> Optional[str]:
         return None
 
 
+_NOISE_WORDS = frozenset({
+    "the", "a", "an", "of", "and", "or", "for", "to", "in", "on", "at",
+    "best", "top", "new", "latest", "review", "news", "vs", "versus",
+    "album", "song", "episode", "podcast", "interview", "this", "that",
+    "what", "how", "why", "where", "when", "who",
+})
+
+
+def _extract_key_terms(topic: str) -> List[str]:
+    """Extract meaningful terms from topic for matching.
+
+    For "Kanye West Bully album" -> ["Kanye West", "Bully"] or similar.
+    For single words, just returns the word.
+    """
+    words = [w.strip() for w in topic.split() if w.strip()]
+    # Remove noise words
+    meaningful = [w for w in words if w.lower() not in _NOISE_WORDS and len(w) > 2]
+    if not meaningful:
+        return [topic.strip()]
+
+    # If the topic has 2+ meaningful words, also include the full phrase
+    # and the first 2 words as a potential entity name
+    terms = []
+    if len(meaningful) >= 2:
+        # Full phrase first (for exact entity matches like "Taylor Swift")
+        terms.append(" ".join(meaningful[:2]))
+    terms.extend(meaningful)
+    return terms
+
+
 def _count_mentions(text: str, topic: str) -> int:
-    """Count case-insensitive topic mentions in text."""
-    # Build a regex pattern from the topic words
-    # For multi-word topics like "Taylor Swift", search for the full phrase
-    pattern = re.escape(topic.strip())
-    return len(re.findall(pattern, text, re.IGNORECASE))
+    """Count case-insensitive topic mentions in text.
+
+    Uses the maximum mention count across key terms extracted from the topic.
+    "Kanye West Bully album" -> max mentions of ["Kanye West", "Kanye", "West", "Bully"].
+    This way, an episode mentioning "Kanye" 85 times counts as 85, not 0.
+    """
+    text_lower = text.lower()
+    terms = _extract_key_terms(topic)
+    max_count = 0
+    for term in terms:
+        pattern = re.escape(term.lower())
+        count = len(re.findall(pattern, text_lower))
+        if count > max_count:
+            max_count = count
+    return max_count
 
 
 def _extract_mention_context(text: str, topic: str, max_excerpts: int = 3) -> List[str]:
