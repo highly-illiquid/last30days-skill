@@ -1,8 +1,8 @@
 ---
 name: last30days
 version: "3.0.1"
-description: "Multi-query social research across Reddit, X, YouTube, TikTok, Instagram, Hacker News, Polymarket, and the web. Intelligent query planning with Gemini/OpenAI fallback."
-argument-hint: 'last30days AI video tools, last30days best noise cancelling headphones'
+description: "Research what people actually say about any topic in the last 30 days. Pulls posts and engagement from Reddit, X, YouTube, TikTok, Hacker News, Polymarket, GitHub, and the web."
+argument-hint: 'last30days nvidia earnings reaction | last30days AI video tools | last30days what users want in react'
 allowed-tools: Bash, Read, Write, AskUserQuestion, WebSearch
 homepage: https://github.com/mvanhorn/last30days-skill
 repository: https://github.com/mvanhorn/last30days-skill
