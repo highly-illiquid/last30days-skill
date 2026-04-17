@@ -85,9 +85,9 @@ fi
 
 ## Step 0: First-Run Setup Wizard
 
-**CRITICAL: ALWAYS execute Step 0 BEFORE Step 1, even if the user provided a topic.** If the user typed `/last30days Mercer Island`, you MUST check for FIRST_RUN and present the wizard BEFORE running research. The topic "Mercer Island" is preserved — research runs immediately after the wizard completes. Do NOT skip the wizard because a topic was provided. The wizard takes 10 seconds and only runs once ever.
+**CRITICAL: ALWAYS execute Step 0 BEFORE Step 1, even if the user provided a topic.** If the user typed `/last30days Mercer Island`, you MUST check for FIRST_RUN and present the wizard BEFORE running research. The topic "Mercer Island" is preserved - research runs immediately after the wizard completes. Do NOT skip the wizard because a topic was provided. The wizard takes 10 seconds and only runs once ever.
 
-To detect first run: check if `~/.config/last30days/.env` exists. If it does NOT exist, this is a first run. **Do NOT run any Bash commands or show any command output to detect this — just check the file existence silently.** If the file exists and contains `SETUP_COMPLETE=true`, skip this section **silently** and proceed to Step 1. **Do NOT say "Setup is complete" or any other status message — just move on.** The user doesn't need to be told setup is done every time they run the skill.
+To detect first run: check if `~/.config/last30days/.env` exists. If it does NOT exist, this is a first run. **Do NOT run any Bash commands or show any command output to detect this - just check the file existence silently.** If the file exists and contains `SETUP_COMPLETE=true`, skip this section **silently** and proceed to Step 1. **Do NOT say "Setup is complete" or any other status message - just move on.** The user doesn't need to be told setup is done every time they run the skill.
 
 **When first run is detected, detect your platform first:**
 
@@ -220,7 +220,7 @@ Options:
 
 If user picks an example, run research with that topic. If they pick "Type my own", ask them what they want to research. If the user originally provided a topic with the command (e.g., `/last30days Mercer Island`), skip this modal and use their topic directly.
 
-**END OF FIRST-RUN WIZARD. Everything above in Step 0 ONLY runs on first run. If SETUP_COMPLETE=true exists in .env, skip ALL of Step 0 — no welcome, no setup, no ScrapeCreators modal, no topic picker. Go directly to Step 1 (Parse User Intent). The topic picker is ONLY for first-time users who haven't run /last30days before.**
+**END OF FIRST-RUN WIZARD. Everything above in Step 0 ONLY runs on first run. If SETUP_COMPLETE=true exists in .env, skip ALL of Step 0 - no welcome, no setup, no ScrapeCreators modal, no topic picker. Go directly to Step 1 (Parse User Intent). The topic picker is ONLY for first-time users who haven't run /last30days before.**
 
 **If the user picks 2 (Manual setup):**
 Show them this guide (present as plain text, not blockquoted):
@@ -387,12 +387,12 @@ Then display (use "and more" if 5+ sources, otherwise list all with Oxford comma
 
 For GENERAL / NEWS / RECOMMENDATIONS / PROMPTING queries:
 ```
-/last30days — searching {ACTIVE_SOURCES_LIST} for what people are saying about {TOPIC}.
+/last30days - searching {ACTIVE_SOURCES_LIST} for what people are saying about {TOPIC}.
 ```
 
 For COMPARISON queries:
 ```
-/last30days — comparing {TOPIC_A} vs {TOPIC_B} across {ACTIVE_SOURCES_LIST}.
+/last30days - comparing {TOPIC_A} vs {TOPIC_B} across {ACTIVE_SOURCES_LIST}.
 ```
 
 Do NOT show a multi-line "Parsed intent" block with TOPIC=, TARGET_TOOL=, QUERY_TYPE= variables. Do NOT promise a specific time. Do NOT list sources that aren't configured.
@@ -563,10 +563,10 @@ When the user asks "X vs Y", run ONE research pass with a comparison-optimized p
 ```
 
 **The `--plan` JSON for comparisons should include 3-4 subqueries:**
-1. **Head-to-head:** `"{TOPIC_A} vs {TOPIC_B}"` — catches rivalry content, direct comparisons
-2. **Entity A news:** `"{TOPIC_A} news {MONTH} {YEAR}"` — catches entity-specific developments
-3. **Entity B news:** `"{TOPIC_B} news {MONTH} {YEAR}"` — catches entity-specific developments
-4. (Optional) **Domain context:** `"{COMPANY_A} {COMPANY_B} {DOMAIN} news"` — catches industry context (e.g., "OpenAI Anthropic AI news")
+1. **Head-to-head:** `"{TOPIC_A} vs {TOPIC_B}"` - catches rivalry content, direct comparisons
+2. **Entity A news:** `"{TOPIC_A} news {MONTH} {YEAR}"` - catches entity-specific developments
+3. **Entity B news:** `"{TOPIC_B} news {MONTH} {YEAR}"` - catches entity-specific developments
+4. (Optional) **Domain context:** `"{COMPANY_A} {COMPANY_B} {DOMAIN} news"` - catches industry context (e.g., "OpenAI Anthropic AI news")
 
 ALL subqueries include ALL sources. The fusion engine handles deduplication across subqueries. **At least one subquery MUST include YouTube-specific search terms** (e.g., "{PERSON} interview 2026", "{PRODUCT_A} vs {PRODUCT_B} review") to ensure YouTube content is found. Without YouTube-specific terms, the engine may only find 0-1 videos for comparison queries.
 
@@ -580,11 +580,11 @@ Then do WebSearch for: `{TOPIC_A} vs {TOPIC_B} comparison {YEAR}` and `{TOPIC_A}
 
 > **PLATFORM GATE:** If your platform does NOT support WebSearch (e.g., OpenClaw, raw CLI), **skip Steps 0.55 and 0.75** but add `--auto-resolve` to the Python command in the Research Execution section. The engine will do its own pre-research using configured web search backends (Brave, Exa, or Serper) to discover subreddits, X handles, and current events context before planning.
 
-**Run 2-3 focused WebSearches (in parallel) to resolve platform-specific targeting. Do NOT search for every platform individually — that wastes time. Instead, use your knowledge of the topic to infer most targeting, and only WebSearch for what you can't infer.**
+**Run 2-3 focused WebSearches (in parallel) to resolve platform-specific targeting. Do NOT search for every platform individually - that wastes time. Instead, use your knowledge of the topic to infer most targeting, and only WebSearch for what you can't infer.**
 
-**1. X handles** — Already resolved in Step 0.5 above (including company handles and commentators). Reference your `RESOLVED_HANDLE` and `RESOLVED_RELATED` from that step.
+**1. X handles** - Already resolved in Step 0.5 above (including company handles and commentators). Reference your `RESOLVED_HANDLE` and `RESOLVED_RELATED` from that step.
 
-**2. Reddit communities + YouTube channels + current events** — Run 1-2 searches that cover multiple platforms at once:
+**2. Reddit communities + YouTube channels + current events** - Run 1-2 searches that cover multiple platforms at once:
 
 ```
 WebSearch("{TOPIC} subreddit reddit community")
@@ -595,18 +595,18 @@ The first search finds subreddits. The second gives you current events context (
 
 Extract 3-5 subreddit names from the results. Store as `RESOLVED_SUBREDDITS` (comma-separated, no r/ prefix).
 
-**3. TikTok hashtags + creators** — **INFER these from your topic knowledge. Do NOT WebSearch for "{PERSON} TikTok account" — most people/CEOs don't have TikTok, and the search is wasted.**
+**3. TikTok hashtags + creators** - **INFER these from your topic knowledge. Do NOT WebSearch for "{PERSON} TikTok account" - most people/CEOs don't have TikTok, and the search is wasted.**
 
 - **Hashtags:** Infer 2-3 from the topic name + category. Examples: "Kanye West" → `kanyewest,ye,bully`. "Claude Code" → `claudecode,aiagent,aicoding`. "Sam Altman" → `samaltman,openai,chatgpt`.
 - **Creators:** Only search if the topic is a content creator, influencer, or brand that likely has TikTok presence. For CEOs, politicians, and non-creator people: skip.
 
 Store as `RESOLVED_HASHTAGS` and `RESOLVED_TIKTOK_CREATORS`.
 
-**4. Instagram creators** — **Same rule: INFER from topic knowledge.** If the topic is a celebrity, brand, or creator with obvious Instagram presence, use their handle directly. If the topic is a tech CEO or abstract concept, skip. Do NOT waste a WebSearch on "Dario Amodei Instagram account."
+**4. Instagram creators** - **Same rule: INFER from topic knowledge.** If the topic is a celebrity, brand, or creator with obvious Instagram presence, use their handle directly. If the topic is a tech CEO or abstract concept, skip. Do NOT waste a WebSearch on "Dario Amodei Instagram account."
 
 Store as `RESOLVED_IG_CREATORS`.
 
-**5. YouTube content queries** — Infer 2-3 YouTube content-type queries from the topic without searching. The current events search (#2 above) may surface relevant YouTube channels.
+**5. YouTube content queries** - Infer 2-3 YouTube content-type queries from the topic without searching. The current events search (#2 above) may surface relevant YouTube channels.
 
 - **For music artists:** `'{TOPIC} album review'`, `'{TOPIC} reaction'`
 - **For products/SaaS:** `'{TOPIC} review'`, `'{TOPIC} tutorial'`
@@ -620,7 +620,7 @@ Store as `RESOLVED_YT_QUERIES`.
 | Topic | WebSearches needed | Reddit subs | TikTok hashtags | TikTok creators | IG creators | YT queries |
 |-------|-------------------|-------------|-----------------|-----------------|-------------|------------|
 | **Kanye West** | 2 (subreddit + BULLY news) | `Kanye,WestSubEver,hiphopheads,Music` | `kanyewest,ye,bully` | (inferred: `kanyewest`) | (inferred: `kanyewest`) | `kanye west bully review,kanye west bully reaction` |
-| **Sam Altman vs Dario** | 2 (subreddit + AI CEO news) | `artificial,MachineLearning,OpenAI,ClaudeAI` | `samaltman,openai,anthropic` | (skip — CEOs don't TikTok) | (skip — CEOs don't Reel) | `sam altman interview 2026,dario amodei interview 2026` |
+| **Sam Altman vs Dario** | 2 (subreddit + AI CEO news) | `artificial,MachineLearning,OpenAI,ClaudeAI` | `samaltman,openai,anthropic` | (skip - CEOs don't TikTok) | (skip - CEOs don't Reel) | `sam altman interview 2026,dario amodei interview 2026` |
 | **Tella** (SaaS) | 2 (subreddit + Tella news) | `SaaS,Entrepreneur,screenrecording,productivity` | `tella,tellaapp,screenrecording` | (search: `tella screen recorder TikTok`) | (inferred: `tella.tv`) | `tella screen recorder review,tella tutorial` |
 
 **For comparison queries ("X vs Y"):** Resolve communities/handles for BOTH topics and merge the lists.
@@ -688,7 +688,7 @@ Only show lines for platforms where something was resolved. Skip empty lines. Th
 **Rules for your plan:**
 - Emit 1 to 4 subqueries (more for complex/multi-faceted topics, fewer for simple ones)
 - **CRITICAL: Your PRIMARY subquery MUST include ALL of these sources: reddit, x, youtube, tiktok, instagram, hackernews, polymarket.** Never omit reddit (highest-signal discussion) or youtube (unique transcripts + official content). Secondary subqueries can target specific platforms.
-- `search_query` should be concise and keyword-heavy — match how content is TITLED on platforms
+- `search_query` should be concise and keyword-heavy - match how content is TITLED on platforms
 - `ranking_query` should read like a natural language question
 - **DISAMBIGUATION:** If the topic name is a common word or has known non-product meanings (e.g., "Loom" = also a weaving tool, "Tella" = also a soccer player), add a qualifying term to your search_query to disambiguate. Examples: "tella screen recording" not just "tella", "loom video messaging" not just "loom". The product category prevents matching unrelated content.
 - **For comparison queries**, each subquery should include the product category: "tella screen recorder review" not just "tella review", "loom video tool pricing" not just "loom pricing".
@@ -701,7 +701,7 @@ Only show lines for platforms where something was resolved. Skip empty lines. Th
 - For how_to: prioritize YouTube (tutorials) and Reddit (guides)
 - Primary subquery weight = 1.0, secondary = 0.6-0.8, peripheral = 0.3-0.5
 
-**Available sources (include ALL in primary subquery):** reddit, x, youtube, tiktok, instagram, hackernews, polymarket. Optional: bluesky, truthsocial, threads, pinterest, grounding (web search — only if user has Brave/Exa/Serper key)
+**Available sources (include ALL in primary subquery):** reddit, x, youtube, tiktok, instagram, hackernews, polymarket. Optional: bluesky, truthsocial, threads, pinterest, grounding (web search - only if user has Brave/Exa/Serper key)
 
 **Intent → freshness_mode mapping:**
 - breaking_news, prediction → `strict_recent`
@@ -715,18 +715,18 @@ Only show lines for platforms where something was resolved. Skip empty lines. Th
 - how_to → `workflow`
 - everything else → `none`
 
-Store your plan as `QUERY_PLAN_JSON` — you'll pass it to the script in the next step.
+Store your plan as `QUERY_PLAN_JSON` - you'll pass it to the script in the next step.
 
 ---
 
 ## Research Execution
 
-### PRECONDITION GATE — read before running the script
+### PRECONDITION GATE - read before running the script
 
 **STOP. Before invoking `last30days.py`, verify ALL of the following are true for this turn:**
 
 1. **Platform branch chosen.** You know whether this session has WebSearch (Claude Code) or does not (OpenClaw, raw CLI, Codex without web tools).
-2. **If WebSearch IS available:** you MUST have run Step 0.55 (Pre-Research Intelligence — resolved subreddits, X handles, TikTok hashtags/creators, Instagram creators, GitHub user/repo where applicable) AND Step 0.75 (Query Planner — produced `QUERY_PLAN_JSON` with 2-4 subqueries). These are NOT optional. If either was skipped, return to that step now.
+2. **If WebSearch IS available:** you MUST have run Step 0.55 (Pre-Research Intelligence - resolved subreddits, X handles, TikTok hashtags/creators, Instagram creators, GitHub user/repo where applicable) AND Step 0.75 (Query Planner - produced `QUERY_PLAN_JSON` with 2-4 subqueries). These are NOT optional. If either was skipped, return to that step now.
 3. **If WebSearch is NOT available:** you MUST add `--auto-resolve` to the command instead. Do not attempt Steps 0.55 / 0.75 without WebSearch.
 4. **The command you are about to run uses `--emit=compact`.** `--emit md` is a debugging/inspection mode and is DISALLOWED as the primary user-facing flow. If you find yourself about to run `--emit md`, stop and switch to `--emit=compact`.
 5. **On WebSearch platforms the command MUST include `--plan 'QUERY_PLAN_JSON'`** plus every resolved handle/subreddit/hashtag/creator flag from Step 0.55. Omit only flags whose value was not resolvable.
@@ -744,7 +744,7 @@ Store your plan as `QUERY_PLAN_JSON` — you'll pass it to the script in the nex
 **IMPORTANT: Include `--x-handle={RESOLVED_HANDLE}` in the command. For comparison mode: Pass `--x-handle={TOPIC_A_HANDLE}` to the first pass, `--x-handle={TOPIC_B_HANDLE}` to the second pass, and both to the head-to-head pass. Also include `--subreddits={RESOLVED_SUBREDDITS}`, `--tiktok-hashtags={RESOLVED_HASHTAGS}`, `--tiktok-creators={RESOLVED_TIKTOK_CREATORS}`, and `--ig-creators={RESOLVED_IG_CREATORS}` from Step 0.55. Omit any flag where the value was not resolved (empty).**
 
 ```bash
-# Find skill root — works in repo checkout, Claude Code, or Codex install
+# Find skill root - works in repo checkout, Claude Code, or Codex install
 for dir in \
   "." \
   "${CLAUDE_PLUGIN_ROOT:-}" \
@@ -790,11 +790,11 @@ The script will automatically:
 
 **Read the ENTIRE output.** It contains EIGHT data sections in this order: Reddit items, X items, YouTube items, TikTok items, Instagram Reels items, Hacker News items, Polymarket items, and WebSearch items. If you miss sections, you will produce incomplete stats.
 
-**YouTube items in the output look like:** `**{video_id}** (score:N) {channel_name} [N views, N likes]` followed by a title, URL, **transcript highlights** (pre-extracted quotable excerpts from the video), and an optional full transcript in a collapsible section. **Quote the highlights directly in your synthesis.** When YouTube items also include top comments (enabled via `youtube_comments`), quote those too with their like counts — they capture how viewers reacted to the video. Transcript highlights and top comments are complementary signals; use both when present. Attribute transcript quotes to the channel name, comment quotes to the commenter. Count them and include them in your synthesis and stats block.
+**YouTube items in the output look like:** `**{video_id}** (score:N) {channel_name} [N views, N likes]` followed by a title, URL, **transcript highlights** (pre-extracted quotable excerpts from the video), and an optional full transcript in a collapsible section. **Quote the highlights directly in your synthesis.** When YouTube items also include top comments (enabled via `youtube_comments`), quote those too with their like counts - they capture how viewers reacted to the video. Transcript highlights and top comments are complementary signals; use both when present. Attribute transcript quotes to the channel name, comment quotes to the commenter. Count them and include them in your synthesis and stats block.
 
 **TikTok items in the output look like:** `**{TK_id}** (score:N) @{creator} [N views, N likes]` followed by a caption, URL, hashtags, and optional caption snippet. Count them and include them in your synthesis and stats block.
 
-**Instagram Reels items in the output look like:** `**{IG_id}** (score:N) @{creator} (date) [N views, N likes]` followed by caption text, URL, and optional transcript. Count them and include them in your synthesis and stats block. Instagram provides unique creator/influencer perspective — weight it alongside TikTok.
+**Instagram Reels items in the output look like:** `**{IG_id}** (score:N) @{creator} (date) [N views, N likes]` followed by caption text, URL, and optional transcript. Count them and include them in your synthesis and stats block. Instagram provides unique creator/influencer perspective - weight it alongside TikTok.
 
 ---
 
@@ -831,7 +831,7 @@ For ALL query types:
 - **USE THE USER'S EXACT TERMINOLOGY** - don't substitute or add tech names based on your knowledge
 - EXCLUDE reddit.com, x.com, twitter.com (covered by script)
 - INCLUDE: blogs, tutorials, docs, news, GitHub repos
-- **DO NOT output a separate "Sources:" block** — instead, include the top 3-5 web
+- **DO NOT output a separate "Sources:" block** - instead, include the top 3-5 web
   source names as inline links on the 🌐 Web: stats line (see stats format below).
   The WebSearch tool requires citation; satisfy it there, not as a trailing section.
 
@@ -857,11 +857,11 @@ Example of what to append:
 ```
 ## WebSearch Supplemental Results
 
-- **Efficient App** (https://efficientapp.com/tella-vs-loom) — Side-by-side comparison showing Tella exports in 27s vs Loom's 11s, with Tella at $19/mo and Loom free/$8/mo.
-- **Shannah Albert Blog** (https://shannahalbert.com/tella-review) — Creator walkthrough of Tella's recording flow, notes the teleprompter feature as a key differentiator.
+- **Efficient App** (https://efficientapp.com/tella-vs-loom) - Side-by-side comparison showing Tella exports in 27s vs Loom's 11s, with Tella at $19/mo and Loom free/$8/mo.
+- **Shannah Albert Blog** (https://shannahalbert.com/tella-review) - Creator walkthrough of Tella's recording flow, notes the teleprompter feature as a key differentiator.
 ```
 
-This ensures anyone reviewing the raw file sees ALL data that fed into the synthesis — not just the Python engine output.
+This ensures anyone reviewing the raw file sees ALL data that fed into the synthesis - not just the Python engine output.
 
 ---
 
@@ -872,9 +872,9 @@ This ensures anyone reviewing the raw file sees ALL data that fed into the synth
 **v3 returns results grouped by STORY/THEME (clusters), not by source.** Each cluster represents one narrative thread found across multiple platforms.
 
 **How to read v3 output:**
-- `### 1. Cluster Title (score N, M items, sources: X, Reddit, TikTok)` — a story found across multiple platforms
-- `Uncertainty: single-source` — only one platform found this story (lower confidence)
-- `Uncertainty: thin-evidence` — all items scored below 55 (unconfirmed)
+- `### 1. Cluster Title (score N, M items, sources: X, Reddit, TikTok)` - a story found across multiple platforms
+- `Uncertainty: single-source` - only one platform found this story (lower confidence)
+- `Uncertainty: thin-evidence` - all items scored below 55 (unconfirmed)
 - Items within a cluster show: source label, title, date, score, URL, and evidence snippet
 
 **Synthesis strategy for cluster-first output:**
@@ -883,7 +883,7 @@ This ensures anyone reviewing the raw file sees ALL data that fed into the synth
 3. **Check uncertainty tags.** "single-source" means treat with caution. "thin-evidence" means mention but caveat.
 4. **Cross-cluster synthesis second.** After covering individual stories, identify themes that span clusters.
 5. **Engagement signals still matter.** Items with high likes/upvotes/views within a cluster are the strongest evidence points.
-6. **Quote directly from evidence snippets.** The snippets are pre-extracted best passages — use them.
+6. **Quote directly from evidence snippets.** The snippets are pre-extracted best passages - use them.
 7. Extract the top 3-5 actionable insights across all clusters.
 8. **Disambiguation: trust your resolved entity.** When Step 0.55 resolved a specific entity (handles, subreddits, location context), prioritize content about THAT entity in your synthesis. If search results contain a different entity with the same name (e.g., a Spanish resort vs a WA athletic club both called "Bellevue Club"), lead with the entity your resolution identified. Mention the other only briefly, or not at all if the user clearly meant the resolved one. The resolved handles are the strongest signal for user intent.
 
@@ -892,10 +892,10 @@ This ensures anyone reviewing the raw file sees ALL data that fed into the synth
 The Judge Agent must:
 1. Weight Reddit/X sources HIGHER (they have engagement signals: upvotes, likes)
 2. Weight YouTube sources HIGH (they have views, likes, and transcript content)
-3. Weight TikTok sources HIGH (they have views, likes, and caption content — viral signal)
+3. Weight TikTok sources HIGH (they have views, likes, and caption content - viral signal)
 4. Weight WebSearch sources LOWER (no engagement data)
-5. **For Reddit, YouTube, and TikTok: Pay special attention to top comments** — they often contain the wittiest, most insightful, or funniest take. Quote them directly, attributing to the commenter and including the vote count ("N upvotes" for Reddit, "N likes" for YouTube and TikTok). A top comment with thousands of votes is a stronger community signal than the parent post's stats alone.
-6. **For YouTube: Quote transcript highlights AND top comments.** Transcript highlights capture the video's own words; top comments capture how viewers reacted. Both add value — use them together. Attribute transcript quotes to the channel name.
+5. **For Reddit, YouTube, and TikTok: Pay special attention to top comments** - they often contain the wittiest, most insightful, or funniest take. Quote them directly, attributing to the commenter and including the vote count ("N upvotes" for Reddit, "N likes" for YouTube and TikTok). A top comment with thousands of votes is a stronger community signal than the parent post's stats alone.
+6. **For YouTube: Quote transcript highlights AND top comments.** Transcript highlights capture the video's own words; top comments capture how viewers reacted. Both add value - use them together. Attribute transcript quotes to the channel name.
 7. Identify patterns that appear across ALL sources (strongest signals)
 8. Note any contradictions between sources
 9. **Multi-source clusters (items from 3+ platforms) are the strongest signals.** Lead with these.
@@ -931,7 +931,7 @@ The Judge Agent must:
 
 ### X Reply Cluster Weighting
 
-When you see a cluster of replies to a recommendation-request tweet (someone asking "what's the best X?" and getting multiple independent responses), call this out prominently. This is the strongest form of community endorsement — real people independently making the same recommendation without coordination. Example: "In a thread where @ecom_cork asked for Loom alternatives, every reply said Tella."
+When you see a cluster of replies to a recommendation-request tweet (someone asking "what's the best X?" and getting multiple independent responses), call this out prominently. This is the strongest form of community endorsement - real people independently making the same recommendation without coordination. Example: "In a thread where @ecom_cork asked for Loom alternatives, every reply said Tella."
 
 ### WebSearch Supplement Weighting for Comparisons
 
@@ -1080,27 +1080,27 @@ CITATION RULE: Cite sources sparingly to prove research is real.
 - Do NOT chain multiple citations: "per @x, @y, @z" is too much. Pick the strongest one.
 
 CITATION PRIORITY (most to least preferred):
-1. @handles from X — "per @handle" (these prove the tool's unique value)
-2. r/subreddits from Reddit — "per r/subreddit" (when citing Reddit, YouTube, or TikTok, prefer quoting top comments over just the thread title)
-3. YouTube channels — "per [channel name] on YouTube" (transcript-backed insights)
-4. TikTok creators — "per @creator on TikTok" (viral/trending signal)
-5. Instagram creators — "per @creator on Instagram" (influencer/creator signal)
-6. HN discussions — "per HN" or "per hn/username" (developer community signal)
-7. Polymarket — "Polymarket has X at Y% (up/down Z%)" with specific odds and movement
-8. Web sources — ONLY when Reddit/X/YouTube/TikTok/Instagram/HN/Polymarket don't cover that specific fact
+1. @handles from X - "per @handle" (these prove the tool's unique value)
+2. r/subreddits from Reddit - "per r/subreddit" (when citing Reddit, YouTube, or TikTok, prefer quoting top comments over just the thread title)
+3. YouTube channels - "per [channel name] on YouTube" (transcript-backed insights)
+4. TikTok creators - "per @creator on TikTok" (viral/trending signal)
+5. Instagram creators - "per @creator on Instagram" (influencer/creator signal)
+6. HN discussions - "per HN" or "per hn/username" (developer community signal)
+7. Polymarket - "Polymarket has X at Y% (up/down Z%)" with specific odds and movement
+8. Web sources - ONLY when Reddit/X/YouTube/TikTok/Instagram/HN/Polymarket don't cover that specific fact
 
 The tool's value is surfacing what PEOPLE are saying, not what journalists wrote.
 When both a web article and an X post cover the same fact, cite the X post.
 
-URL FORMATTING: NEVER paste raw URLs anywhere in the output — not in synthesis, not in stats, not in sources.
+URL FORMATTING: NEVER paste raw URLs anywhere in the output - not in synthesis, not in stats, not in sources.
 - **BAD:** "per https://www.rollingstone.com/music/music-news/kanye-west-bully-1235506094/"
 - **GOOD:** "per Rolling Stone"
-- **BAD stats line:** `🌐 Web: 10 pages — https://later.com/blog/..., https://buffer.com/...`
-- **GOOD stats line:** `🌐 Web: 10 pages — Later, Buffer, CNN, SocialBee`
-Use the publication/site name, not the URL. The user doesn't need links — they need clean, readable text.
+- **BAD stats line:** `🌐 Web: 10 pages - https://later.com/blog/..., https://buffer.com/...`
+- **GOOD stats line:** `🌐 Web: 10 pages - Later, Buffer, CNN, SocialBee`
+Use the publication/site name, not the URL. The user doesn't need links - they need clean, readable text.
 
 **BAD:** "His album is set for March 20 (per Rolling Stone; Billboard; Complex)."
-**GOOD:** "His album BULLY drops March 20 — fans on X are split on the tracklist, per @honest30bgfan_"
+**GOOD:** "His album BULLY drops March 20 - fans on X are split on the tracklist, per @honest30bgfan_"
 **GOOD:** "Ye's apology got massive traction on r/hiphopheads"
 **OK** (web, only when Reddit/X don't have it): "The Hellwatt Festival runs July 4-18 at RCF Arena, per Billboard"
 
@@ -1108,21 +1108,27 @@ Use the publication/site name, not the URL. The user doesn't need links — they
 users are saying/feeling, then add web context only if needed. The user came
 here for the conversation, not the press release.
 
-**MANDATORY — bold headline per narrative paragraph.** Every paragraph in the "What I learned" section MUST begin with a bolded headline phrase that summarizes the paragraph, followed by a dash and the body text. Pattern: `**Headline phrase** — body text describing what people are saying...`. Without the bold headline, the output is unscannable slop. The Kanye and Matt Van Horn reference outputs follow this pattern end-to-end; bland outputs that drop the bold headline are the regression shape to avoid.
+**MANDATORY - bold headline per narrative paragraph.** Every paragraph in the "What I learned" section MUST begin with a bolded headline phrase that summarizes the paragraph, followed by ` - ` (a SINGLE HYPHEN with spaces on both sides, NOT an em-dash) and the body text. Pattern: `**Headline phrase** - body text describing what people are saying...`. Without the bold headline, the output is unscannable slop.
+
+**NEVER use em-dashes (`—`) or en-dashes (`–`) anywhere in your response.** Use ` - ` (single hyphen with spaces) instead. Em-dashes are the most reliable AI-slop tell; a response with em-dashes reads as generated. This applies to synthesis body, headline separators, KEY PATTERNS list, and the invitation section. The only exception is quoted content where the source used an em-dash.
+
+**NEVER use `##` or `###` markdown section headers in your response body.** No `## The launch`, no `## Where it disappoints`, no `## Polymarket`, no `## Best quotes`, no `## Stats snapshot`. Those read as AI-slop news-article structure. The narrative is a short block of bold-lead-in paragraphs followed by a prose label `KEY PATTERNS from the research:` followed by a numbered list. That is the only structure.
+
+**NEVER write a title line at the top of your response.** No `Kanye West: last 30 days`, no `Claude Opus 4.7 - what people are actually saying`, no `{Topic} news`. Your response begins with the prose label `What I learned:` on its own line and goes straight into the narrative.
 
 ```
 What I learned:
 
-**{Headline summarizing topic 1}** — [1-2 sentences about what people are saying, per @handle or r/sub]
+**{Headline summarizing topic 1}** - [1-2 sentences about what people are saying, per @handle or r/sub]
 
-**{Headline summarizing topic 2}** — [1-2 sentences, per @handle or r/sub]
+**{Headline summarizing topic 2}** - [1-2 sentences, per @handle or r/sub]
 
-**{Headline summarizing topic 3}** — [1-2 sentences, per @handle or r/sub]
+**{Headline summarizing topic 3}** - [1-2 sentences, per @handle or r/sub]
 
 KEY PATTERNS from the research:
-1. [Pattern] — per @handle
-2. [Pattern] — per r/sub
-3. [Pattern] — per @handle
+1. [Pattern] - per @handle
+2. [Pattern] - per r/sub
+3. [Pattern] - per @handle
 ```
 
 Headlines should be specific and newsy ("BULLY dropped and it's dominating", "Europe is banning him one country at a time"), not generic ("Album release", "Tour updates").
@@ -1140,49 +1146,21 @@ Options:
 - "I have an xAI API key" - Ask them to paste it, write XAI_API_KEY to .env
 - "Skip for now"
 
-**THEN - Stats (right before invitation):**
+**THEN - Engine footer pass-through (right before invitation):**
 
-**CRITICAL: Calculate actual totals from the research output.**
-- Count posts/threads from each section
-- Sum engagement: parse `[Xlikes, Yrt]` from each X post, `[Xpts, Ycmt]` from Reddit
-- Identify top voices: highest-engagement @handles from X, most active subreddits
+**The research output ENDS with a deterministic footer block bracketed by `---` lines, starting with `✅ All agents reported back!` and ending with `📎 Raw results saved to ~/Documents/Last30Days/<slug>-raw.md`. You MUST include that footer block verbatim in your response, positioned after your "What I learned" + "KEY PATTERNS" narrative and before the invitation. Do not recompute the stats. Do not reformat the tree. Do not paraphrase. Do not skip it. Do not add your own source lines. Copy the exact bytes.**
 
-**Copy this EXACTLY, replacing only the {placeholders}:**
+- The engine already omits zero-count sources. You do not need to filter them.
+- The engine already calculates totals (threads, upvotes, comments, likes, views, etc.). You do not need to add them up.
+- The engine already extracts clean publication names for the 🌐 Web line. You do not need to strip URLs.
+- The engine already formats Polymarket odds as real `%` strings. You do not need to parse them.
+- The engine already picks top voices (handles + subreddits). You do not need to pick them.
 
-```
----
-✅ All agents reported back!
-├─ 🟠 Reddit: {N} threads │ {N} upvotes │ {N} comments
-├─ 🔵 X: {N} posts │ {N} likes │ {N} reposts
-├─ 🔴 YouTube: {N} videos │ {N} views │ {N} with transcripts
-├─ 🎵 TikTok: {N} videos │ {N} views │ {N} likes │ {N} with captions
-├─ 📸 Instagram: {N} reels │ {N} views │ {N} likes │ {N} with captions
-├─ 🧵 Threads: {N} posts │ {N} likes │ {N} replies
-├─ 📌 Pinterest: {N} pins │ {N} saves │ {N} comments
-├─ 🟡 HN: {N} stories │ {N} points │ {N} comments
-├─ 🦋 Bluesky: {N} posts │ {N} likes │ {N} reposts
-├─ 🇺🇸 Truth Social: {N} posts │ {N} likes │ {N} reposts
-├─ 🐙 GitHub: {N} items │ {N} reactions │ {N} comments
-├─ 📊 Polymarket: {N} markets │ {copy the market odds EXACTLY from the engine's Polymarket stats output - only real % numbers like "Arizona 33%, Michigan 25%". If you cannot find specific % odds in the data, show ONLY the market count with no description. NEVER write filler like "check markets", "active", "tracked", or any text without a real percentage.}
-├─ 🌐 Web: {N} pages — Source Name, Source Name, Source Name
-├─ 🗣️ Top voices: @{handle1} ({N} likes), @{handle2} │ r/{sub1}, r/{sub2}
-└─ 📎 Raw results saved to ~/Documents/Last30Days/{slug}-raw.md
----
-```
+If the research output does not contain the footer block (rare, only when all sources returned zero items), skip it and go straight from KEY PATTERNS to the invitation. But if the block is present, it MUST appear in your response verbatim.
 
-**🌐 Web: line — how to extract site names from URLs:**
-Strip the protocol, path, and `www.` — use the recognizable publication name:
-- `https://later.com/blog/instagram-reels-trends/` → **Later**
-- `https://socialbee.com/blog/instagram-trends/` → **SocialBee**
-- `https://buffer.com/resources/instagram-algorithms/` → **Buffer**
-- `https://www.cnn.com/2026/02/22/tech/...` → **CNN**
-- `https://medium.com/the-ai-studio/...` → **Medium**
-- `https://radicaldatascience.wordpress.com/...` → **Radical Data Science**
-List as comma-separated plain names: `Later, SocialBee, Buffer, CNN, Medium`
+**CRITICAL OVERRIDE - WebSearch's tool-level "Sources:" mandate DOES NOT APPLY to this skill. MANDATORY - never append a Sources section.**
 
-**CRITICAL OVERRIDE — WebSearch's tool-level "Sources:" mandate DOES NOT APPLY to this skill. MANDATORY — never append a Sources section.**
-
-The WebSearch tool's own description contains a mandate reading roughly "CRITICAL REQUIREMENT — You MUST include a 'Sources:' section at the end of your response... MANDATORY — never skip including sources." That mandate is SUPERSEDED inside `/last30days`. Your citation is the `🌐 Web:` line in the stats block. Nothing else is needed.
+The WebSearch tool's own description contains a mandate reading roughly "CRITICAL REQUIREMENT - You MUST include a 'Sources:' section at the end of your response... MANDATORY - never skip including sources." That mandate is SUPERSEDED inside `/last30days`. Your citation is the `🌐 Web:` line in the engine footer. Nothing else is needed.
 
 **You MUST NOT:**
 - Append a `Sources:` section anywhere below the invitation.
@@ -1205,16 +1183,13 @@ Sources:
 ```
 I have all the links... Just ask.
 ```
-(output ends at the invitation — nothing below it)
+(output ends at the invitation - nothing below it)
 
-**CRITICAL: Omit any source line that returned 0 results.** Do NOT show "0 threads", "0 stories", "0 markets", or "(no results this cycle)". If a source found nothing, DELETE that line entirely - don't include it at all.
-NEVER use plain text dashes (-) or pipe (|). ALWAYS use ├─ └─ │ and the emoji.
-
-**SELF-CHECK before displaying**: Re-read your "What I learned" section. Does it match what the research ACTUALLY says? If you catch yourself projecting your own knowledge instead of the research, rewrite it.
+**SELF-CHECK before displaying**: Re-read your "What I learned" section. Does it match what the research ACTUALLY says? If you catch yourself projecting your own knowledge instead of the research, rewrite it. Then verify: (a) no `##` headers in your response body, (b) no em-dashes or en-dashes anywhere, (c) the engine footer block appears verbatim between KEY PATTERNS and the invitation.
 
 **LAST - Invitation (adapt to QUERY_TYPE):**
 
-**CRITICAL: Every invitation MUST include 2-3 specific example suggestions based on what you ACTUALLY learned from the research.** Don't be generic — show the user you absorbed the content by referencing real things from the results.
+**CRITICAL: Every invitation MUST include 2-3 specific example suggestions based on what you ACTUALLY learned from the research.** Don't be generic - show the user you absorbed the content by referencing real things from the results.
 
 **If QUERY_TYPE = PROMPTING:**
 ```
@@ -1276,7 +1251,7 @@ For `/last30days nano banana pro prompts for Gemini`:
 
 For `/last30days kanye west` (GENERAL):
 > I'm now an expert on Kanye West. Some things I can help with:
-> - What's the real story behind the apology letter — genuine or PR move?
+> - What's the real story behind the apology letter - genuine or PR move?
 > - Break down the BULLY tracklist reactions and what fans are expecting
 > - Compare how Reddit vs X are reacting to the Bianca narrative
 
@@ -1292,17 +1267,17 @@ I have all the links to the {N} {source list} I pulled from. Just ask.
 
 ---
 
-## PRE-PRESENT SELF-CHECK — run before displaying the synthesis
+## PRE-PRESENT SELF-CHECK - run before displaying the synthesis
 
 **Before you display the synthesis to the user, verify ALL of the following. If any check fails AND the underlying data supports fixing it, regenerate the synthesis ONCE with the missing elements. If the data itself is absent (e.g., no Polymarket markets on this topic), skip that check silently.**
 
-1. **Bold headlines present.** Every narrative paragraph in "What I learned" starts with `**Headline phrase** —`. If any paragraph opens with plain prose, regenerate with bold headlines.
+1. **Bold headlines present.** Every narrative paragraph in "What I learned" starts with `**Headline phrase** -` (single hyphen with spaces, NOT em-dash). If any paragraph opens with plain prose, regenerate with bold headlines.
 2. **Per-source emoji headers in the stats footer.** Every active source returned by the engine has a `├─` or `└─` line with its emoji, counts, and engagement numbers. No active source is silently dropped; no source with 0 results is displayed.
 3. **Quoted highlights where evidence supports them.** For YouTube items with transcripts and Reddit/X items with fun/highlight quotes, at least 2 verbatim quotes appear in the synthesis. Attributed to the channel/commenter/subreddit.
 4. **Polymarket block present if markets were returned.** If the engine surfaced Polymarket markets, the synthesis includes specific percentages and directional movement. If no markets were surfaced, skip.
 5. **Coverage footer matches the actual output.** `✅ All agents reported back!` line followed by per-source `├─`/`└─` tree exactly as the engine provided.
-6. **NO trailing Sources section.** The output ends at the invitation ("I have all the links... Just ask."). Nothing below it. Not a `Sources:`, not a `References:`, not `Further reading:`, not any bulleted list of URLs or publication names. If you are about to emit one because WebSearch told you to — DO NOT. The 🌐 Web: line is the citation.
-7. **Research protocol was followed.** On WebSearch platforms, the command you ran used `--emit=compact --plan 'QUERY_PLAN_JSON'` with resolved handles/subreddits/hashtags. If you took the degraded path (`--emit md`, no plan, no flags), the synthesis will almost certainly fail checks 1-3 — regenerate by returning to Step 0.55 and running the full protocol.
+6. **NO trailing Sources section.** The output ends at the invitation ("I have all the links... Just ask."). Nothing below it. Not a `Sources:`, not a `References:`, not `Further reading:`, not any bulleted list of URLs or publication names. If you are about to emit one because WebSearch told you to - DO NOT. The 🌐 Web: line is the citation.
+7. **Research protocol was followed.** On WebSearch platforms, the command you ran used `--emit=compact --plan 'QUERY_PLAN_JSON'` with resolved handles/subreddits/hashtags. If you took the degraded path (`--emit md`, no plan, no flags), the synthesis will almost certainly fail checks 1-3 - regenerate by returning to Step 0.55 and running the full protocol.
 
 **Max ONE regeneration.** If the regenerated output still fails the self-check, display the best version you have and note to the user which check(s) the data could not satisfy, so they can re-run or adjust their query.
 
@@ -1310,7 +1285,7 @@ I have all the links to the {N} {source list} I pulled from. Just ask.
 
 ## WAIT FOR USER'S RESPONSE
 
-**STOP and wait** for the user to respond. Do NOT call any tools after displaying the invitation. Do NOT append a `Sources:` section (see override above — WebSearch's mandate does not apply here). The research script already saved raw data to `~/Documents/Last30Days/` via `--save-dir`.
+**STOP and wait** for the user to respond. Do NOT call any tools after displaying the invitation. Do NOT append a `Sources:` section (see override above - WebSearch's mandate does not apply here). The research script already saved raw data to `~/Documents/Last30Days/` via `--save-dir`.
 
 ---
 
@@ -1415,7 +1390,7 @@ Want another prompt? Just tell me what you're creating next.
 **What this skill does:**
 - Sends search queries to ScrapeCreators API (`api.scrapecreators.com`) for TikTok and Instagram search, and as a Reddit backup when public Reddit is unavailable (requires SCRAPECREATORS_API_KEY)
 - Legacy: Sends search queries to OpenAI's Responses API (`api.openai.com`) for Reddit discovery (fallback if no SCRAPECREATORS_API_KEY)
-- Sends search queries to Twitter's GraphQL API (via optional user-provided AUTH_TOKEN/CT0 env vars — no browser session access) or xAI's API (`api.x.ai`) for X search
+- Sends search queries to Twitter's GraphQL API (via optional user-provided AUTH_TOKEN/CT0 env vars - no browser session access) or xAI's API (`api.x.ai`) for X search
 - Sends search queries to Algolia HN Search API (`hn.algolia.com`) for Hacker News story and comment discovery (free, no auth)
 - Sends search queries to Polymarket Gamma API (`gamma-api.polymarket.com`) for prediction market discovery (free, no auth)
 - Runs `yt-dlp` locally for YouTube search and transcript extraction (no API key, public data)

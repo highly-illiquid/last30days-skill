@@ -398,5 +398,141 @@ class RenderBestTakesCompactTests(unittest.TestCase):
         self.assertNotIn("## Best Takes", text)
 
 
+class EmojiFooterTests(unittest.TestCase):
+    """Deterministic magic footer emitted by the Python engine."""
+
+    def _make_report(self, items_by_source):
+        return schema.Report(
+            topic="test topic",
+            range_from="2026-03-18",
+            range_to="2026-04-17",
+            generated_at="2026-04-17T00:00:00+00:00",
+            provider_runtime=schema.ProviderRuntime(reasoning_provider="n/a", planner_model="n/a", rerank_model="n/a"),
+            query_plan=schema.QueryPlan(
+                intent="news", freshness_mode="strict_recent", cluster_mode="story", raw_topic="test topic",
+                subqueries=[schema.SubQuery(label="p", search_query="x", ranking_query="x", sources=["reddit"])],
+                source_weights={"reddit": 1.0},
+            ),
+            clusters=[], ranked_candidates=[],
+            items_by_source=items_by_source, errors_by_source={},
+        )
+
+    def _reddit(self, item_id="r1", score=300, comments=50, sub="test"):
+        return schema.SourceItem(
+            item_id=item_id, source="reddit", title="t", body="",
+            url=f"https://reddit.com/r/{sub}/{item_id}", container=sub,
+            engagement={"score": score, "num_comments": comments},
+        )
+
+    def _x(self, item_id="x1", author="user", likes=100, reposts=10):
+        return schema.SourceItem(
+            item_id=item_id, source="x", title="t", body="",
+            url=f"https://x.com/{author}/status/{item_id}", author=author,
+            engagement={"likes": likes, "reposts": reposts},
+        )
+
+    def _web(self, url, item_id=None):
+        return schema.SourceItem(
+            item_id=item_id or f"g-{url[:8]}", source="grounding", title="t", body="",
+            url=url, container=url.split("//")[-1].split("/")[0],
+        )
+
+    def test_footer_present_with_reddit_and_x(self):
+        report = self._make_report({"reddit": [self._reddit()], "x": [self._x()]})
+        out = render.render_compact(report, save_path="~/Documents/Last30Days/test-raw.md")
+        self.assertIn("✅ All agents reported back!", out)
+        self.assertIn("├─ 🟠 Reddit: 1 thread │ 300 upvotes │ 50 comments", out)
+        self.assertIn("🔵 X: 1 post │ 100 likes │ 10 reposts", out)
+        self.assertIn("└─ 📎 Raw results saved to ~/Documents/Last30Days/test-raw.md", out)
+
+    def test_footer_omits_zero_count_sources(self):
+        report = self._make_report({"reddit": [self._reddit()]})
+        out = render.render_compact(report, save_path="~/foo.md")
+        self.assertNotIn("YouTube:", out)
+        self.assertNotIn("TikTok:", out)
+        self.assertNotIn("Instagram:", out)
+        self.assertIn("🟠 Reddit:", out)
+
+    def test_footer_tree_ends_with_last_line(self):
+        report = self._make_report({"reddit": [self._reddit()]})
+        out = render.render_compact(report, save_path="~/foo.md")
+        self.assertIn("└─ 📎 Raw results saved", out)
+        for line in out.splitlines():
+            if "Raw results saved" in line:
+                self.assertTrue(line.startswith("└─"), f"Raw results line should start with └─, got: {line}")
+
+    def test_footer_absent_when_no_save_path(self):
+        report = self._make_report({"reddit": [self._reddit()]})
+        out = render.render_compact(report)
+        self.assertIn("🟠 Reddit:", out)
+        self.assertNotIn("Raw results saved", out)
+
+    def test_footer_absent_when_all_sources_empty(self):
+        report = self._make_report({})
+        out = render.render_compact(report, save_path="~/foo.md")
+        self.assertNotIn("✅ All agents reported back!", out)
+
+    def test_web_line_uses_clean_publication_names(self):
+        report = self._make_report({
+            "grounding": [
+                self._web("https://later.com/blog/x"),
+                self._web("https://buffer.com/resources/y"),
+                self._web("https://unknown.weirdsite.xyz/z"),
+            ],
+        })
+        out = render.render_compact(report, save_path="~/foo.md")
+        self.assertIn("🌐 Web: 3 pages - Later, Buffer, unknown.weirdsite.xyz", out)
+
+    def test_top_voices_combines_handles_and_subreddits(self):
+        report = self._make_report({
+            "reddit": [self._reddit(sub="Anthropic"), self._reddit(item_id="r2", sub="ClaudeAI")],
+            "x": [self._x(author="boris_cherny"), self._x(item_id="x2", author="alexalbert__")],
+        })
+        out = render.render_compact(report, save_path="~/foo.md")
+        self.assertIn("🗣️ Top voices:", out)
+        for line in out.splitlines():
+            if "Top voices:" in line:
+                self.assertIn("@boris_cherny", line)
+                self.assertIn("r/", line)
+
+    def test_footer_renders_after_source_coverage(self):
+        report = self._make_report({"reddit": [self._reddit()]})
+        out = render.render_compact(report, save_path="~/foo.md")
+        source_coverage_pos = out.find("## Source Coverage")
+        footer_pos = out.find("✅ All agents reported back!")
+        self.assertLess(source_coverage_pos, footer_pos)
+
+
+class SiteNameHelperTests(unittest.TestCase):
+    """URL to publication name helper used by the Web footer line."""
+
+    def test_known_publication_returns_clean_name(self):
+        self.assertEqual(render._site_name_for_url("https://later.com/blog/x"), "Later")
+        self.assertEqual(render._site_name_for_url("https://www.cnn.com/2026/x"), "CNN")
+        self.assertEqual(render._site_name_for_url("https://buffer.com/y"), "Buffer")
+
+    def test_unknown_publication_falls_back_to_full_host(self):
+        self.assertEqual(render._site_name_for_url("https://unknown.xyz/abc"), "unknown.xyz")
+        self.assertEqual(render._site_name_for_url("https://sub.unknown.xyz/abc"), "sub.unknown.xyz")
+
+    def test_subdomain_stripped_when_apex_is_known(self):
+        self.assertEqual(render._site_name_for_url("https://eu.bloomberg.com/x"), "Bloomberg")
+
+    def test_empty_url_returns_empty(self):
+        self.assertEqual(render._site_name_for_url(""), "")
+
+    def test_url_without_scheme(self):
+        self.assertEqual(render._site_name_for_url("later.com/x"), "Later")
+
+    def test_format_web_line_dedupes(self):
+        items = [
+            schema.SourceItem(item_id="1", source="grounding", title="t", body="", url="https://later.com/a"),
+            schema.SourceItem(item_id="2", source="grounding", title="t", body="", url="https://later.com/b"),
+            schema.SourceItem(item_id="3", source="grounding", title="t", body="", url="https://buffer.com/c"),
+        ]
+        result = render._format_web_line_sources(items)
+        self.assertEqual(result, "Later, Buffer")
+
+
 if __name__ == "__main__":
     unittest.main()

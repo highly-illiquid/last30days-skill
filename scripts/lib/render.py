@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from urllib.parse import urlparse
 
 from . import dates, schema
 
@@ -36,7 +37,7 @@ def _assistant_safety_lines() -> list[str]:
     ]
 
 
-def render_compact(report: schema.Report, cluster_limit: int = 8, fun_level: str = "medium") -> str:
+def render_compact(report: schema.Report, cluster_limit: int = 8, fun_level: str = "medium", save_path: str | None = None) -> str:
     non_empty = [s for s, items in sorted(report.items_by_source.items()) if items]
     lines = [
         f"# last30days v3.0.0: {report.topic}",
@@ -86,6 +87,12 @@ def render_compact(report: schema.Report, cluster_limit: int = 8, fun_level: str
         lines.extend([""] + best_takes)
 
     lines.extend(_render_source_coverage(report))
+
+    footer = _render_emoji_footer(report, save_path)
+    if footer:
+        lines.append("")
+        lines.extend(footer)
+
     return "\n".join(lines).strip() + "\n"
 
 
@@ -352,6 +359,275 @@ def _render_source_coverage(report: schema.Report) -> list[str]:
         for source, error in sorted(report.errors_by_source.items()):
             lines.append(f"- {_source_label(source)}: {error}")
     return lines
+
+
+# Known publications for the Web line of the emoji-tree footer.
+# Maps apex domain to a clean display name. Unknown domains fall back to
+# the bare domain string (protocol stripped, www. removed).
+_SITE_NAMES: dict[str, str] = {
+    "later.com": "Later",
+    "buffer.com": "Buffer",
+    "socialbee.com": "SocialBee",
+    "cnn.com": "CNN",
+    "bbc.com": "BBC",
+    "bbc.co.uk": "BBC",
+    "nytimes.com": "NYT",
+    "nypost.com": "NY Post",
+    "wsj.com": "WSJ",
+    "bloomberg.com": "Bloomberg",
+    "reuters.com": "Reuters",
+    "theverge.com": "The Verge",
+    "techcrunch.com": "TechCrunch",
+    "wired.com": "Wired",
+    "arstechnica.com": "Ars Technica",
+    "theguardian.com": "The Guardian",
+    "independent.co.uk": "The Independent",
+    "theatlantic.com": "The Atlantic",
+    "newyorker.com": "The New Yorker",
+    "washingtonpost.com": "Washington Post",
+    "politico.com": "Politico",
+    "axios.com": "Axios",
+    "semafor.com": "Semafor",
+    "theinformation.com": "The Information",
+    "medium.com": "Medium",
+    "substack.com": "Substack",
+    "dev.to": "dev.to",
+    "github.com": "GitHub",
+    "stackoverflow.com": "Stack Overflow",
+    "producthunt.com": "Product Hunt",
+    "variety.com": "Variety",
+    "deadline.com": "Deadline",
+    "rollingstone.com": "Rolling Stone",
+    "complex.com": "Complex",
+    "pbs.org": "PBS",
+    "npr.org": "NPR",
+    "forbes.com": "Forbes",
+    "cnbc.com": "CNBC",
+    "businessinsider.com": "Business Insider",
+    "fortune.com": "Fortune",
+    "vox.com": "Vox",
+    "slate.com": "Slate",
+    "theregister.com": "The Register",
+    "venturebeat.com": "VentureBeat",
+    "hackernoon.com": "HackerNoon",
+    "anthropic.com": "Anthropic",
+    "openai.com": "OpenAI",
+    "aws.amazon.com": "AWS",
+    "9to5mac.com": "9to5Mac",
+    "9to5google.com": "9to5Google",
+    "decrypt.co": "Decrypt",
+    "xda-developers.com": "XDA",
+    "tomshardware.com": "Tom's Hardware",
+    "engadget.com": "Engadget",
+    "mashable.com": "Mashable",
+    "vellum.ai": "Vellum",
+    "helpnetsecurity.com": "Help Net Security",
+    "gizmodo.com": "Gizmodo",
+}
+
+
+def _site_name_for_url(url: str) -> str:
+    """Return a clean publication name for a URL, or a bare domain fallback.
+
+    Strips protocol and ``www.`` from unknowns; checks known publications
+    before falling back. Returns a short readable string, never a raw URL.
+    """
+    if not url:
+        return ""
+    u = url.strip()
+    if not u:
+        return ""
+    # urlparse needs a scheme to resolve the netloc; prepend http:// if missing.
+    parsed = urlparse(u if "://" in u else f"http://{u}")
+    host = (parsed.netloc or parsed.path.split("/", 1)[0]).lower()
+    if host.startswith("www."):
+        host = host[4:]
+    if not host:
+        return u[:40]
+    if host in _SITE_NAMES:
+        return _SITE_NAMES[host]
+    # Try stripping one subdomain level (eu.example.com -> example.com)
+    parts = host.split(".")
+    if len(parts) >= 3:
+        apex = ".".join(parts[-2:])
+        if apex in _SITE_NAMES:
+            return _SITE_NAMES[apex]
+    return host
+
+
+def _format_web_line_sources(items: list[schema.SourceItem], limit: int = 8) -> str:
+    """Return comma-separated clean publication names for the Web line.
+
+    Deduplicates by display name while preserving first-seen order.
+    """
+    seen: list[str] = []
+    for item in items:
+        if not item.url:
+            continue
+        name = _site_name_for_url(item.url)
+        if not name:
+            continue
+        if name not in seen:
+            seen.append(name)
+        if len(seen) >= limit:
+            break
+    return ", ".join(seen)
+
+
+# Per-source line format for the emoji-tree footer.
+# Label in the template, emoji prefix, word for the item count, and which
+# engagement dimensions to show.  Keys are the source names as used in
+# Report.items_by_source.  Order here is the render order.
+_FOOTER_SOURCES: list[tuple[str, str, str, str, list[tuple[str, str]]]] = [
+    # (source_key,  emoji, display_name, item_word_singular, [(engagement_key, word)])
+    ("reddit",      "🟠", "Reddit",       "thread",   [("score", "upvotes"), ("num_comments", "comments")]),
+    ("x",           "🔵", "X",            "post",     [("likes", "likes"), ("reposts", "reposts")]),
+    ("youtube",     "🔴", "YouTube",      "video",    [("views", "views"), ("likes", "likes")]),
+    ("tiktok",      "🎵", "TikTok",       "video",    [("views", "views"), ("likes", "likes")]),
+    ("instagram",   "📸", "Instagram",    "reel",     [("views", "views"), ("likes", "likes")]),
+    ("threads",     "🧵", "Threads",      "post",     [("likes", "likes"), ("replies", "replies")]),
+    ("pinterest",   "📌", "Pinterest",    "pin",      [("saves", "saves"), ("comments", "comments")]),
+    ("hackernews",  "🟡", "HN",           "story",    [("points", "points"), ("comments", "comments")]),
+    ("bluesky",     "🦋", "Bluesky",      "post",     [("likes", "likes"), ("reposts", "reposts")]),
+    ("truthsocial", "🇺🇸", "Truth Social", "post",     [("likes", "likes"), ("reposts", "reposts")]),
+    ("github",      "🐙", "GitHub",       "item",     [("reactions", "reactions"), ("comments", "comments")]),
+]
+
+
+def _sum_engagement(items: list[schema.SourceItem], key: str) -> int:
+    total = 0
+    for item in items:
+        value = item.engagement.get(key) if item.engagement else None
+        if value in (None, ""):
+            continue
+        try:
+            total += int(value)
+        except (TypeError, ValueError):
+            continue
+    return total
+
+
+def _footer_line_for_source(emoji: str, label: str, count: int, item_word: str, stats: str) -> str:
+    count_str = f"{count:,}" if count >= 1000 else str(count)
+    plural = f"{item_word}s" if count != 1 else item_word
+    if stats:
+        return f"{emoji} {label}: {count_str} {plural} │ {stats}"
+    return f"{emoji} {label}: {count_str} {plural}"
+
+
+def _build_source_footer_lines(report: schema.Report) -> list[str]:
+    """Return emoji-tree body lines (without tree characters) for each populated source.
+
+    The caller adds the tree characters (├─ / └─) after assembling all lines.
+    """
+    out: list[str] = []
+    for source_key, emoji, label, item_word, engagement_fields in _FOOTER_SOURCES:
+        items = report.items_by_source.get(source_key) or []
+        if not items:
+            continue
+        parts: list[str] = []
+        for eng_key, word in engagement_fields:
+            total = _sum_engagement(items, eng_key)
+            if total > 0:
+                total_str = f"{total:,}" if total >= 1000 else str(total)
+                parts.append(f"{total_str} {word}")
+        stats = " │ ".join(parts)
+        out.append(_footer_line_for_source(emoji, label, len(items), item_word, stats))
+
+    # Polymarket (special: count + odds string from existing helper)
+    polymarket_items = report.items_by_source.get("polymarket") or []
+    if polymarket_items:
+        odds = _polymarket_top_markets(polymarket_items, limit=3)
+        odds_str = ", ".join(odds) if odds else ""
+        count = len(polymarket_items)
+        count_str = f"{count:,}" if count >= 1000 else str(count)
+        plural = "markets" if count != 1 else "market"
+        if odds_str:
+            out.append(f"📊 Polymarket: {count_str} {plural} │ {odds_str}")
+        else:
+            out.append(f"📊 Polymarket: {count_str} {plural}")
+
+    # Web (sources from grounding)
+    web_items = report.items_by_source.get("grounding") or []
+    if web_items:
+        names = _format_web_line_sources(web_items)
+        count = len(web_items)
+        count_str = f"{count:,}" if count >= 1000 else str(count)
+        plural = "pages" if count != 1 else "page"
+        if names:
+            out.append(f"🌐 Web: {count_str} {plural} - {names}")
+        else:
+            out.append(f"🌐 Web: {count_str} {plural}")
+
+    return out
+
+
+def _top_voices_footer_line(report: schema.Report) -> str | None:
+    """Return the 🗣️ Top voices line or None if no meaningful voices exist.
+
+    Combines top handles (X, Bluesky, Truth Social, YouTube, TikTok, Instagram)
+    and top subreddits, separated by │.
+    """
+    handle_items = {
+        source: report.items_by_source.get(source) or []
+        for source in ("x", "bluesky", "truthsocial", "youtube", "tiktok", "instagram", "threads")
+    }
+    handle_counts: Counter[str] = Counter()
+    for items in handle_items.values():
+        for item in items:
+            actor = _stats_actor(item)
+            if actor and actor.startswith("@"):
+                handle_counts[actor] += 1
+
+    subreddit_counts: Counter[str] = Counter()
+    for item in report.items_by_source.get("reddit") or []:
+        if item.container:
+            subreddit_counts[f"r/{item.container}"] += 1
+
+    top_handles = [h for h, _ in handle_counts.most_common(3)]
+    top_subs = [s for s, _ in subreddit_counts.most_common(3)]
+    if not top_handles and not top_subs:
+        return None
+    parts: list[str] = []
+    if top_handles:
+        parts.append(", ".join(top_handles))
+    if top_subs:
+        parts.append(", ".join(top_subs))
+    return f"🗣️ Top voices: {' │ '.join(parts)}"
+
+
+def _render_emoji_footer(report: schema.Report, save_path: str | None) -> list[str]:
+    """Produce the deterministic magic footer block.
+
+    Returns a list of markdown lines, including enclosing ``---`` separators.
+    Returns an empty list if no sources are populated.
+    """
+    source_lines = _build_source_footer_lines(report)
+    if not source_lines:
+        return []
+
+    voices_line = _top_voices_footer_line(report)
+    raw_line = f"📎 Raw results saved to {save_path}" if save_path else None
+
+    body: list[str] = []
+    body.extend(source_lines)
+    if voices_line:
+        body.append(voices_line)
+    if raw_line:
+        body.append(raw_line)
+
+    # Apply tree characters: ├─ for all but the last body line, └─ for the last.
+    tree_lines: list[str] = []
+    for i, line in enumerate(body):
+        prefix = "└─" if i == len(body) - 1 else "├─"
+        tree_lines.append(f"{prefix} {line}")
+
+    return [
+        "---",
+        "✅ All agents reported back!",
+        *tree_lines,
+        "---",
+    ]
 
 
 def _render_stats(report: schema.Report) -> list[str]:
