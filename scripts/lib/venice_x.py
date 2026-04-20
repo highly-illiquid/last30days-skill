@@ -32,7 +32,7 @@ def _log_error(msg: str):
 VENICE_CHAT_URL = "https://api.venice.ai/api/v1/chat/completions"
 
 # Default Grok model on Venice that supports x_search
-VENICE_DEFAULT_MODEL = "grok-41-fast"
+VENICE_DEFAULT_MODEL = "grok-4-20-beta"
 
 # Depth configurations: (min, max) posts to request
 DEPTH_CONFIG = {
