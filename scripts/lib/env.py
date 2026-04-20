@@ -237,6 +237,7 @@ def get_config() -> dict[str, Any]:
     }
 
     keys = [
+        ('VENICE_API_KEY', None),
         ('XAI_API_KEY', None),
         ('GOOGLE_API_KEY', None),
         ('GEMINI_API_KEY', None),
@@ -247,6 +248,8 @@ def get_config() -> dict[str, Any]:
         ('LAST30DAYS_RERANK_MODEL', None),
         ('LAST30DAYS_X_MODEL', None),
         ('LAST30DAYS_X_BACKEND', None),
+        ('VENICE_API_KEY', None),
+        ('VENICE_X_MODEL', None),
         ('OPENAI_MODEL_PIN', None),
         ('XAI_MODEL_PIN', None),
         ('SCRAPECREATORS_API_KEY', None),
@@ -351,6 +354,8 @@ def extract_browser_credentials(config: dict[str, Any]) -> dict[str, str]:
 
 def get_x_source_with_method(config: dict[str, Any]) -> tuple[str | None, str]:
     """Return (source, method) for X search, where method describes the auth origin."""
+    if config.get("VENICE_API_KEY"):
+        return "venice", "venice"
     if config.get("XAI_API_KEY"):
         return "xai", "xai"
     if config.get("AUTH_TOKEN") and config.get("CT0"):
@@ -400,6 +405,7 @@ def get_x_source(config: dict[str, Any]) -> str | None:
 
     Returns:
         'bird' if Bird is installed and explicit cookies are configured,
+        'venice' if VENICE_API_KEY is configured (Grok + x_search via Venice),
         'xai' if XAI_API_KEY is configured,
         None if no X source available.
     """
@@ -411,11 +417,15 @@ def get_x_source(config: dict[str, Any]) -> str | None:
     if has_bird_creds:
         bird_x.set_credentials(config.get('AUTH_TOKEN'), config.get('CT0'))
 
+    if preferred == 'venice':
+        return 'venice' if config.get('VENICE_API_KEY') else None
     if preferred == 'xai':
         return 'xai' if config.get('XAI_API_KEY') else None
     if preferred == 'bird':
         return 'bird' if has_bird_creds and bird_x.is_bird_installed() else None
 
+    if config.get('VENICE_API_KEY'):
+        return 'venice'
     if config.get('XAI_API_KEY'):
         return 'xai'
     if has_bird_creds and bird_x.is_bird_installed():
@@ -587,17 +597,20 @@ def get_x_source_status(config: dict[str, Any]) -> dict[str, Any]:
 
     Returns:
         Dict with keys: source, bird_installed, bird_authenticated,
-        bird_username, xai_available, can_install_bird
+        bird_username, venice_available, xai_available, can_install_bird
     """
     from . import bird_x
 
     if config.get('AUTH_TOKEN') and config.get('CT0'):
         bird_x.set_credentials(config.get('AUTH_TOKEN'), config.get('CT0'))
     bird_status = bird_x.get_bird_status()
+    venice_available = bool(config.get('VENICE_API_KEY'))
     xai_available = bool(config.get('XAI_API_KEY'))
 
-    # Determine active source
-    if bird_status["authenticated"]:
+    # Determine active source: Venice > Bird > xAI
+    if venice_available:
+        source = 'venice'
+    elif bird_status["authenticated"]:
         source = 'bird'
     elif xai_available:
         source = 'xai'
@@ -609,6 +622,7 @@ def get_x_source_status(config: dict[str, Any]) -> dict[str, Any]:
         "bird_installed": bird_status["installed"],
         "bird_authenticated": bird_status["authenticated"],
         "bird_username": bird_status["username"],
+        "venice_available": venice_available,
         "xai_available": xai_available,
         "can_install_bird": bird_status["can_install"],
     }

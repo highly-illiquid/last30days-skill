@@ -13,11 +13,13 @@ GEMINI_FLASH_LITE = "gemini-3.1-flash-lite-preview"
 GEMINI_PRO = "gemini-3.1-pro-preview"
 OPENAI_DEFAULT = "gpt-5.4-nano"
 XAI_DEFAULT = "grok-4-1-fast"
+VENICE_DEFAULT_MODEL = "grok-41-fast"
 
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 CODEX_RESPONSES_URL = "https://chatgpt.com/backend-api/codex/responses"
 XAI_RESPONSES_URL = "https://api.x.ai/v1/responses"
+VENICE_CHAT_URL = "https://api.venice.ai/api/v1/chat/completions"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_DEFAULT = "google/gemini-flash-2.0"
 

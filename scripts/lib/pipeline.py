@@ -37,6 +37,7 @@ from . import (
     threads,
     tiktok,
     truthsocial,
+    venice_x,
     xai_x,
     xiaohongshu_api,
     xquik,
@@ -884,6 +885,17 @@ def _retrieve_stream(
         if backend == "bird":
             result = bird_x.search_x(subquery.search_query, from_date, to_date, depth=depth)
             return bird_x.parse_bird_response(result, query=subquery.search_query), {}
+        if backend == "venice":
+            model = config.get("VENICE_X_MODEL") or providers.VENICE_DEFAULT_MODEL
+            result = venice_x.search_x(
+                config["VENICE_API_KEY"],
+                model,
+                subquery.search_query,
+                from_date,
+                to_date,
+                depth=depth,
+            )
+            return venice_x.parse_x_response(result), {}
         if backend == "xai":
             model = config.get("LAST30DAYS_X_MODEL") or config.get("XAI_MODEL_PIN") or providers.XAI_DEFAULT
             result = xai_x.search_x(
