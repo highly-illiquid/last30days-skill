@@ -254,6 +254,7 @@ def get_config() -> dict[str, Any]:
         ('XAI_MODEL_PIN', None),
         ('SCRAPECREATORS_API_KEY', None),
         ('APIFY_API_TOKEN', None),
+        ('GITHUB_TOKEN', None),
         ('AUTH_TOKEN', None),
         ('CT0', None),
         ('BSKY_HANDLE', None),
